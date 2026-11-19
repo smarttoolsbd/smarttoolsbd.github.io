@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartToolsBD - Free Online Tools</title>
+<meta name="description" content="Free online image compressor, image resizer, image converter and word counter tools.">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb;color:#172033}
+header{background:#14213d;color:white;padding:20px;text-align:center}
+header h1{margin:0;color:#54e0bd}
+header p{margin:9px 0 0;color:#dce5f5}
+nav{background:white;padding:14px;text-align:center}
+nav a{color:#172033;text-decoration:none;margin:0 10px;font-weight:bold}
+.hero{text-align:center;padding:38px 15px}
+.hero h2{font-size:29px}
+.hero p{color:#64748b}
+.container{max-width:900px;margin:auto;padding:10px 16px}
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.card{background:white;padding:20px;border-radius:14px;box-shadow:0 3px 15px #0000000c}
+.card h3{color:#176b58}
+input,select,textarea{width:100%;padding:12px;margin:9px 0;border:1px solid #ccd4df;border-radius:8px;font-size:15px}
+button{background:#087f68;color:white;border:0;padding:12px 16px;border-radius:8px;font-weight:bold;cursor:pointer;width:100%;margin-top:8px}
+.result{margin-top:12px;word-break:break-word;color:#087f68}
+footer{text-align:center;padding:25px;background:#14213d;color:white;margin-top:35px}
+.small{font-size:13px;color:#64748b}
+</style>
+</head>
+<body>
+<header>
+<h1>SmartToolsBD</h1>
+<p>Free Online Tools For Everyone</p>
+</header>
+<nav>
+<a href="#tools">Tools</a>
+<a href="#about">About</a>
+</nav>
+<section class="hero">
+<h2>All Your Online Tools in One Place</h2>
+<p>Fast, Simple and Free Online Tools.</p>
+</section>
+<main class="container" id="tools">
+<div class="tools">
+<div class="card">
+<h3>🖼️ Image Compressor</h3>
+<p class="small">Reduce image file size easily.</p>
+<input type="file" id="compressFile" accept="image/*">
+<label>Image quality</label>
+<input type="range" id="quality" min="10" max="100" value="70">
+<button onclick="compressImage()">Compress Image</button>
+<div class="result" id="compressResult"></div>
+</div>
+<div class="card">
+<h3>📐 Image Resizer</h3>
+<p class="small">Change image dimensions.</p>
+<input type="file" id="resizeFile" accept="image/*">
+<input type="number" id="width" placeholder="Width (pixels)">
+<input type="number" id="height" placeholder="Height (pixels)">
+<button onclick="resizeImage()">Resize Image</button>
+<div class="result" id="resizeResult"></div>
+</div>
+<div class="card">
+<h3>🔄 JPG / PNG Converter</h3>
+<p class="small">Convert images to JPG or PNG.</p>
+<input type="file" id="convertFile" accept="image/*">
+<select id="format">
+<option value="image/jpeg">Convert to JPG</option>
+<option value="image/png">Convert to PNG</option>
+</select>
+<button onclick="convertImage()">Convert Image</button>
+<div class="result" id="convertResult"></div>
+</div>
+<div class="card">
+<h3>📝 Word Counter</h3>
+<p class="small">Count words and characters.</p>
+<textarea id="words" rows="5" placeholder="Type your text here..." oninput="countWords()"></textarea>
+<div class="result" id="wordResult">Words: 0 | Characters: 0</div>
+</div>
+</div>
+</main>
+<section class="container" id="about">
+<div class="card">
+<h3>About SmartToolsBD</h3>
+<p>SmartToolsBD provides simple and free online tools to make your daily tasks easier. Use our tools anytime, anywhere.</p>
+</div>
+</section>
+<footer>
+<p>© 2026 SmartToolsBD</p>
+<p>Free Online Tools Website</p>
+</footer>
+<script>
+function loadImage(file,callback){
+if(!file || !file.type.startsWith("image/")){
+alert("Please select a valid image.");
+return;
+}
+let img=new Image();
+let url=URL.createObjectURL(file);
+img.onload=()=>{callback(img);URL.revokeObjectURL(url)};
+img.onerror=()=>{alert("Could not open this image.");URL.revokeObjectURL(url)};
+img.src=url;
+}
+function makeCanvas(img,w,h,type,quality,resultId,name){
+let canvas=document.createElement("canvas");
+canvas.width=w;canvas.height=h;
+canvas.getContext("2d").drawImage(img,0,0,w,h);
+canvas.toBlob(blob=>{
+if(!blob){alert("Image processing failed.");return;}
+let url=URL.createObjectURL(blob);
+let a=document.createElement("a");
+a.href=url;a.download=name;
+a.textContent="Download Image";
+a.style.display="inline-block";
+a.style.padding="12px";
+a.style.background="#087f68";
+a.style.color="white";
+a.style.borderRadius="8px";
+a.style.textDecoration="none";
+let box=document.getElementById(resultId);
+box.innerHTML="Done! File size: "+(blob.size/1024).toFixed(1)+" KB<br>";
+box.appendChild(a);
+},type,quality);
+}
+function compressImage(){
+let file=document.getElementById("compressFile").files[0];
+loadImage(file,img=>{
+makeCanvas(img,img.naturalWidth,img.naturalHeight,"image/jpeg",
+Number(document.getElementById("quality").value)/100,
+"compressResult","compressed.jpg");
+});
+}
+function resizeImage(){
+let file=document.getElementById("resizeFile").files[0];
+let w=Number(document.getElementById("width").value);
+let h=Number(document.getElementById("height").value);
+if(!w||!h||w<1||h<1){alert("Enter valid width and height.");return;}
+if(w>10000||h>10000){alert("Maximum dimension is 10000 pixels.");return;}
+loadImage(file,img=>{
+makeCanvas(img,w,h,"image/png",1,"resizeResult","resized.png");
+});
+}
+function convertImage(){
+let file=document.getElementById("convertFile").files[0];
+let type=document.getElementById("format").value;
+loadImage(file,img=>{
+makeCanvas(img,img.naturalWidth,img.naturalHeight,type,0.92,
+"convertResult",type==="image/png"?"converted.png":"converted.jpg");
+});
+}
+function countWords(){
+let text=document.getElementById("words").value.trim();
+let words=text?text.split(/\s+/).length:0;
+document.getElementById("wordResult").textContent=
+"Words: "+words+" | Characters: "+document.getElementById("words").value.length;
+}
+</script>
+</body>
+</html>
